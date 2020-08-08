@@ -1,0 +1,56 @@
+#App {
+	width: 1200px;
+	height: 100vh;
+	margin: auto;
+	display: flex;
+	flex-direction: column;
+	justify-content: center;
+	align-items: center;
+}
+
+@media (max-width: 1200px) {
+	#App {
+		width: 90%;
+	}
+}
+
+#canvas-wrapper {
+	width: 1024px;
+	height: 512px;
+}
+
+@media (max-width: 1024px) {
+	#canvas-wrapper {
+		width: 90%;
+		height: 90%;
+	}
+}
+
+#text {
+	margin-top: 1rem;
+	display: flex;
+}
+
+.inputbox {
+	text-align: right;
+	&>* {
+		margin: .5rem 1rem;
+	}
+	input {
+		border-radius: .2rem;
+		padding: .2rem;
+	}
+}
+
+button {
+	width: 8rem;
+	margin: .5rem;
+	padding: .5rem;
+	border-radius: .5rem;
+	background-color: #eee;
+	font-size: 1.5rem;
+	cursor: pointer;
+	&:hover {
+		background-color: #f7f7f7;
+	}
+}

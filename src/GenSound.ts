@@ -1,4 +1,6 @@
 const context: AudioContext = new AudioContext();
+let gain: GainNode = context.createGain();
+let osc: OscillatorNode = context.createOscillator();
 let analyser: AnalyserNode = context.createAnalyser();
 analyser.smoothingTimeConstant = 0.9;
 
@@ -6,39 +8,40 @@ analyser.smoothingTimeConstant = 0.9;
 let sampleRate: number = context.sampleRate;
 
 // サウンド生成
-export const createSound = (
-		func: (t: number) => number,
-		duration: number
-): AudioBuffer => {
-	// 時間刻み
-	let dt: number = 1 / sampleRate;
-	// AudioBuffer 作成
-	let buffer: AudioBuffer = context.createBuffer(1, sampleRate * duration, sampleRate);
-	// バッファのデータ配列
-	let data: Float32Array = buffer.getChannelData(0);
-	
-	for (let i = 0; i < data.length; i++) {
-		data[i] = func(dt * i);
-	}
+export const createSound = (freq: number, vol: number) => {
+	// OscillatorNode 初期化
+	osc = context.createOscillator();
+	// GainNode 初期化
+	gain = context.createGain();	
 
-	return buffer;
+	// 接続
+	osc.connect(gain);
+	gain.connect(analyser);
+	analyser.connect(context.destination);
+
+	// 周波数設定
+	osc.frequency.value = freq;
+	// 音量設定
+	gain.gain.value = vol;
+
+	// 再生
+	osc.start(0);
 }
 
-// サウンド再生
-export const playSound = (buffer: AudioBuffer): void => {
-	// source
-	const source: AudioBufferSourceNode = context.createBufferSource();
-	// バッファを設定
-	source.buffer = buffer;
+// 停止
+export const stopSound = (): void => {
+	console.log(context)
+	osc.stop(0);
+}
 
-	// analyser に接続
-	source.connect(analyser);
-	
-	// 出力先に接続
-	analyser.connect(context.destination);
-	
-	// 再生
-	source.start(0);
+// 周波数変更
+export const changeFreq = (freq: number): void => {
+	osc.frequency.value = freq;
+}
+
+// 周波数変更
+export const changeVol = (vol: number): void => {
+	gain.gain.value = vol;
 }
 
 const changeScale = (value: number, len: number): number => {
@@ -52,15 +55,24 @@ export const plotGraph = (ctx: CanvasRenderingContext2D, width: number, height: 
 		// 背景
 		ctx.fillStyle = '#ffffff';
 		ctx.fillRect(0, 0, width, height);
+		// 枠線
 		ctx.strokeStyle = '#999999';
 		ctx.strokeRect(0, 0, width, height);
+		ctx.fillStyle = '#333333';
+		ctx.fillRect(0, height - 16, width, 1);
+		// グリッド
 		for (let i = 10, j = 10; (i < 10*j || (j = 10**2, i < 10*j) || (j = 10**3, i <= 10*j)); i += j) {
 			if (i === j) {
 				ctx.fillStyle = '#333333';
 			} else {
 				ctx.fillStyle = '#aaaaaa';
 			}
-			ctx.fillRect(width*Math.log10(i)/Math.log10(24000), 0, 1, height);
+			let x: number = width*Math.log10(i)/Math.log10(24000);
+			ctx.fillRect(x, 0, 1, height - 16);
+			if (i === j || i === 5*j) {
+				let text: string = i < 1000 ? i + 'Hz' : i/1000 + 'kHz'
+				ctx.fillText(text, x - 8, height - 4);
+			}
 		}
 
 		// 周波数グラフ描画
@@ -73,7 +85,7 @@ export const plotGraph = (ctx: CanvasRenderingContext2D, width: number, height: 
 
 		for (let i = 0, len = data.length; i < len; i++) {
 			let x: number = width * changeScale(i, len) / changeScale(len, len);
-			let y: number = height*(1 - (data[i]/255));
+			let y: number = (height - 16)*(1 - (data[i]/255));
 			if (!i) {
 				ctx.moveTo(x, y);
 			} else {
