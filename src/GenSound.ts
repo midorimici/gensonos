@@ -2,13 +2,14 @@ const context: AudioContext = new AudioContext();
 let analyser: AnalyserNode = context.createAnalyser();
 analyser.smoothingTimeConstant = 0.9;
 
+// サンプリングレート
+let sampleRate: number = context.sampleRate;
+
 // サウンド生成
 export const createSound = (
 		func: (t: number) => number,
 		duration: number
 ): AudioBuffer => {
-	// サンプリングレート
-	let sampleRate: number = context.sampleRate;
 	// 時間刻み
 	let dt: number = 1 / sampleRate;
 	// AudioBuffer 作成
@@ -40,25 +41,47 @@ export const playSound = (buffer: AudioBuffer): void => {
 	source.start(0);
 }
 
-export const plotGraph = (): void => {
-	const ctx: CanvasRenderingContext2D = (document.getElementById('graph') as HTMLCanvasElement).getContext('2d')!;
+const changeScale = (value: number, len: number): number => {
+	let rtn: number = Math.log10((value / len) * sampleRate / 2);
+	if (rtn === -Infinity) return 0;
+	return rtn;
+};
 
+export const plotGraph = (ctx: CanvasRenderingContext2D, width: number, height: number): void => {
 	const drawGraph = (): void => {
 		// 背景
 		ctx.fillStyle = '#ffffff';
-		ctx.fillRect(0, 0, 256, 256);
+		ctx.fillRect(0, 0, width, height);
 		ctx.strokeStyle = '#999999';
-		ctx.strokeRect(0, 0, 256, 256);
-
-		// グラフ
-		const data: Uint8Array = new Uint8Array(256);
-		
-		// 周波数グラフ描画
-		analyser.getByteFrequencyData(data);
-		for (let i = 0; i < 256; i++) {
-			ctx.fillStyle = '#faaa33';
-			ctx.fillRect(i, 256 - data[i], 1, data[i])
+		ctx.strokeRect(0, 0, width, height);
+		for (let i = 10, j = 10; (i < 10*j || (j = 10**2, i < 10*j) || (j = 10**3, i <= 10*j)); i += j) {
+			if (i === j) {
+				ctx.fillStyle = '#333333';
+			} else {
+				ctx.fillStyle = '#aaaaaa';
+			}
+			ctx.fillRect(width*Math.log10(i)/Math.log10(24000), 0, 1, height);
 		}
+
+		// 周波数グラフ描画
+		const data: Uint8Array = new Uint8Array(analyser.frequencyBinCount);
+		analyser.getByteFrequencyData(data);
+
+		ctx.strokeStyle = '#faaa33';
+
+		ctx.beginPath();
+
+		for (let i = 0, len = data.length; i < len; i++) {
+			let x: number = width * changeScale(i, len) / changeScale(len, len);
+			let y: number = height*(1 - (data[i]/255));
+			if (!i) {
+				ctx.moveTo(x, y);
+			} else {
+				ctx.lineTo(x, y);
+			}
+		}
+
+		ctx.stroke();
 	}
 
 	setInterval(drawGraph, 100)

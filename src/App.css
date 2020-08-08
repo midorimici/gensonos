@@ -13,3 +13,15 @@
 		width: 90%;
 	}
 }
+
+#canvas-wrapper {
+	width: 1024px;
+	height: 512px;
+}
+
+@media (max-width: 1024px) {
+	#canvas-wrapper {
+		width: 256px;
+		height: 256px;
+	}
+}
