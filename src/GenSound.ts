@@ -55,6 +55,10 @@ const changeScale = (value: number, len: number): number => {
 	return rtn;
 };
 
+// 範囲
+analyser.maxDecibels = 0;
+const range: number = analyser.maxDecibels - analyser.minDecibels;
+
 // timeout
 let timer: any = 0;
 
@@ -68,9 +72,7 @@ export const plotGraph = (ctx: CanvasRenderingContext2D, width: number, height: 
 		// 枠線
 		ctx.strokeStyle = '#999999';
 		ctx.strokeRect(0, 0, width, height);
-		ctx.fillStyle = '#333333';
-		ctx.fillRect(0, height - 16, width, 1);
-		// グリッド
+		// 横軸グリッド
 		for (let i = 10, j = 10; (i < 10*j || (j = 10**2, i < 10*j) || (j = 10**3, i <= 10*j)); i += j) {
 			if (i === j) {
 				ctx.fillStyle = '#333333';
@@ -78,19 +80,27 @@ export const plotGraph = (ctx: CanvasRenderingContext2D, width: number, height: 
 				ctx.fillStyle = '#aaaaaa';
 			}
 			let x: number = width*Math.log10(i)/Math.log10(24000);
-			ctx.fillRect(x, 0, 1, height - 16);
+			ctx.fillRect(x, 16, 1, height - 16);
 			if (i === j || i === 5*j) {
 				let text: string = i < 1000 ? i + 'Hz' : i/1000 + 'kHz'
-				ctx.fillText(text, x - 8, height - 4);
+				ctx.fillText(text, x - 8, 12);
 			}
 		}
+		// 縦軸グリッド
+		for (let i = analyser.minDecibels; i <= analyser.maxDecibels; i += 20) {
+			let y: number = 16 + height*(analyser.maxDecibels - i)/range;
+			ctx.fillRect(0, y, width, 1);
+			ctx.fillText(i + 'dB', 4, y - 4);
+		}
+
 		// 現在変更中の音の周波数の線
 		ctx.fillStyle = '#aa0000';
-		ctx.fillRect(width*Math.log10(freq)/Math.log10(24000), 0, 1, height- 16);
+		ctx.fillRect(width*Math.log10(freq)/Math.log10(24000), 16, 1, height - 16);
 
 		// 周波数グラフ描画
-		const data: Uint8Array = new Uint8Array(analyser.frequencyBinCount);
-		analyser.getByteFrequencyData(data);
+		// データ取得
+		const data: Float32Array = new Float32Array(analyser.frequencyBinCount);
+		analyser.getFloatFrequencyData(data);
 
 		ctx.strokeStyle = '#faaa33';
 
@@ -98,7 +108,7 @@ export const plotGraph = (ctx: CanvasRenderingContext2D, width: number, height: 
 
 		for (let i = 0, len = data.length; i < len; i++) {
 			let x: number = width * changeScale(i, len) / changeScale(len, len);
-			let y: number = (height - 16)*(1 - (data[i]/255));
+			let y: number = 16 + (height - 16)*(analyser.maxDecibels - data[i])/range;
 			if (!i) {
 				ctx.moveTo(x, y);
 			} else {
@@ -109,5 +119,5 @@ export const plotGraph = (ctx: CanvasRenderingContext2D, width: number, height: 
 		ctx.stroke();
 	}
 
-	timer = setInterval(drawGraph, 100);
+	timer = setInterval(drawGraph, 80);
 }

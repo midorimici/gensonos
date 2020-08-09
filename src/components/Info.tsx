@@ -51,13 +51,16 @@ export default () => {
 			for (const sound of sounds) {
 				createSound(sound.freq, sound.vol/100);
 			}
-				createSound(hz, vol/100);
+			createSound(hz, vol/100);
 		}
 	}
 
 	const handleAdd = (): void => {
 		if (~sounds.map(e => e.freq).indexOf(hz)) return;
 		setSounds([...sounds, {freq: hz, vol}]);
+		if (!isMute) {
+			createSound(hz, vol/100);
+		}
 	}
 
 	return (
@@ -65,7 +68,7 @@ export default () => {
 			<div id='edit'>
 				<div className='inputbox'>
 					周波数
-					<input type='number' value={hz} onChange={handleFreqChange} />
+					<input type='number' value={hz} min={0} onChange={handleFreqChange} />
 				</div>
 				<div className='inputbox'>
 					音量
@@ -80,7 +83,13 @@ export default () => {
 			</div>
 			<div id='sound-list'>
 				<ul>
-					{sounds.map((e: {freq: number, vol: number}) => <li>周波数:{e.freq}, 音量:{e.vol}</li>)}
+					{sounds.map((e: {freq: number, vol: number}) => (
+						<li>
+							周波数:{e.freq}, 音量:{e.vol}
+							<button className='del-btn'>削除</button>
+							<button className='mod-btn'>編集</button>
+						</li>
+					))}
 				</ul>
 			</div>
 		</section>

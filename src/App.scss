@@ -43,9 +43,7 @@
 }
 
 button {
-	width: 8rem;
 	margin: .5rem;
-	padding: .5rem;
 	border-radius: .5rem;
 	background-color: #eee;
 	font-size: 1.5rem;
@@ -53,4 +51,14 @@ button {
 	&:hover {
 		background-color: #f7f7f7;
 	}
+}
+
+#edit>button {
+	width: 8rem;
+	padding: .5rem;
+}
+
+#sound-list>button {
+	width: 4rem;
+	padding: .2rem;
 }
