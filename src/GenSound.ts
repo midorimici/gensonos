@@ -1,6 +1,7 @@
 const context: AudioContext = new AudioContext();
-let gain: GainNode = context.createGain();
 let osc: OscillatorNode = context.createOscillator();
+let oscillators: OscillatorNode[] = [];
+let gain: GainNode = context.createGain();
 let analyser: AnalyserNode = context.createAnalyser();
 analyser.smoothingTimeConstant = 0.9;
 
@@ -11,6 +12,8 @@ let sampleRate: number = context.sampleRate;
 export const createSound = (freq: number, vol: number) => {
 	// OscillatorNode 初期化
 	osc = context.createOscillator();
+	// OscillatorNode リストに追加
+	oscillators.push(osc);
 	// GainNode 初期化
 	gain = context.createGain();	
 
@@ -30,8 +33,9 @@ export const createSound = (freq: number, vol: number) => {
 
 // 停止
 export const stopSound = (): void => {
-	console.log(context)
-	osc.stop(0);
+	for (let oscillator of oscillators) {
+		oscillator.stop(0);
+	}
 }
 
 // 周波数変更
@@ -44,13 +48,19 @@ export const changeVol = (vol: number): void => {
 	gain.gain.value = vol;
 }
 
+// 片対数目盛のための計算
 const changeScale = (value: number, len: number): number => {
 	let rtn: number = Math.log10((value / len) * sampleRate / 2);
 	if (rtn === -Infinity) return 0;
 	return rtn;
 };
 
-export const plotGraph = (ctx: CanvasRenderingContext2D, width: number, height: number): void => {
+// timeout
+let timer: any = 0;
+
+export const plotGraph = (ctx: CanvasRenderingContext2D, width: number, height: number, freq: number): void => {
+	clearInterval(timer);
+	
 	const drawGraph = (): void => {
 		// 背景
 		ctx.fillStyle = '#ffffff';
@@ -74,6 +84,9 @@ export const plotGraph = (ctx: CanvasRenderingContext2D, width: number, height: 
 				ctx.fillText(text, x - 8, height - 4);
 			}
 		}
+		// 現在変更中の音の周波数の線
+		ctx.fillStyle = '#aa0000';
+		ctx.fillRect(width*Math.log10(freq)/Math.log10(24000), 0, 1, height- 16);
 
 		// 周波数グラフ描画
 		const data: Uint8Array = new Uint8Array(analyser.frequencyBinCount);
@@ -96,5 +109,5 @@ export const plotGraph = (ctx: CanvasRenderingContext2D, width: number, height: 
 		ctx.stroke();
 	}
 
-	setInterval(drawGraph, 100)
+	timer = setInterval(drawGraph, 100);
 }

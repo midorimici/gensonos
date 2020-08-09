@@ -24,22 +24,17 @@ export default () => {
 		canvas.height = height.current;
 
 		ctx.current = canvas.getContext('2d')!;		
-
-		// 音の生成
-		if (!isMute) {
-			for (const sound of sounds) {
-				createSound(sound.freq, sound.vol/100);
-			}
-			createSound(hz, vol/100);
-		}
+		//
 		// グラフの描画
-		plotGraph(ctx.current, width.current, height.current);
-	}, [isMute]);
+		plotGraph(ctx.current, width.current, height.current, hz);
+	}, []);
 
 	const handleFreqChange = (e: React.ChangeEvent<HTMLInputElement>): void => {
 		let freq: number = Number(e.target.value);
 		setHz(freq);
 		changeFreq(freq);
+		// グラフの描画
+		plotGraph(ctx.current!, width.current, height.current, freq);
 	}
 
 	const handleVolChange = (e: React.ChangeEvent<HTMLInputElement>): void => {
@@ -52,13 +47,17 @@ export default () => {
 		setIsMute(!isMute);
 		if (!isMute) {
 			stopSound();
+		} else {
+			for (const sound of sounds) {
+				createSound(sound.freq, sound.vol/100);
+			}
+				createSound(hz, vol/100);
 		}
 	}
 
 	const handleAdd = (): void => {
 		if (~sounds.map(e => e.freq).indexOf(hz)) return;
 		setSounds([...sounds, {freq: hz, vol}]);
-		
 	}
 
 	return (
