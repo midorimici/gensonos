@@ -58,7 +58,10 @@ button {
 	padding: .5rem;
 }
 
-#sound-list>button {
-	width: 4rem;
-	padding: .2rem;
+#sound-list {
+	width: 30rem;
+	&>button {
+		width: 4rem;
+		padding: .2rem;
+	}
 }

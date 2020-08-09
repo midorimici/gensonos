@@ -43,10 +43,21 @@ export const changeFreq = (freq: number): void => {
 	osc.frequency.value = freq;
 }
 
-// 周波数変更
+// 音量変更
 export const changeVol = (vol: number): void => {
 	gain.gain.value = vol;
 }
+
+// oscillator 消去
+export const deleteOsc = (index: number): void => {
+	let target: OscillatorNode = oscillators[index];
+	if (target) {
+		target.stop(0);
+		oscillators.splice(index, 1);
+	}
+}
+
+
 
 // 片対数目盛のための計算
 const changeScale = (value: number, len: number): number => {

@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 
-import { createSound, plotGraph, stopSound, changeFreq, changeVol } from '../GenSound';
+import { createSound, plotGraph, stopSound, changeFreq, changeVol, deleteOsc } from '../GenSound';
 
 export default () => {
 	const [hz, setHz] = useState<number>(440);
@@ -63,6 +63,13 @@ export default () => {
 		}
 	}
 
+	const handleDelete = (index: number) => {
+		let newSounds: {freq: number, vol: number}[] = sounds.slice();
+		newSounds.splice(index, 1);
+		setSounds(newSounds);
+		deleteOsc(index);
+	}
+
 	return (
 		<section id='text'>
 			<div id='edit'>
@@ -83,10 +90,10 @@ export default () => {
 			</div>
 			<div id='sound-list'>
 				<ul>
-					{sounds.map((e: {freq: number, vol: number}) => (
-						<li>
+					{sounds.map((e: {freq: number, vol: number}, i: number) => (
+						<li key={i}>
 							周波数:{e.freq}, 音量:{e.vol}
-							<button className='del-btn'>削除</button>
+							<button className='del-btn' onClick={() => handleDelete(i)}>削除</button>
 							<button className='mod-btn'>編集</button>
 						</li>
 					))}
