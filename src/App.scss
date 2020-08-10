@@ -1,6 +1,6 @@
 #App {
 	width: 1200px;
-	height: 100vh;
+	min-height: 100vh;
 	margin: auto;
 	display: flex;
 	flex-direction: column;
@@ -17,6 +17,7 @@
 #canvas-wrapper {
 	width: 1024px;
 	height: 512px;
+	margin: 1rem;
 }
 
 @media (max-width: 1024px) {
@@ -27,12 +28,11 @@
 }
 
 #text {
-	margin-top: 1rem;
 	display: flex;
 }
 
 .inputbox {
-	text-align: right;
+	text-align: left;
 	&>* {
 		margin: .5rem 1rem;
 	}
@@ -40,6 +40,10 @@
 		border-radius: .2rem;
 		padding: .2rem;
 	}
+}
+
+#mode-select {
+	height: 1.5rem;
 }
 
 button {
@@ -58,10 +62,12 @@ button {
 	padding: .5rem;
 }
 
-#sound-list {
+#sound-list>ul {
 	width: 30rem;
 	&>button {
 		width: 4rem;
 		padding: .2rem;
 	}
 }
+
+

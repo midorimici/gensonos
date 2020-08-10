@@ -9,7 +9,7 @@ analyser.smoothingTimeConstant = 0.9;
 let sampleRate: number = context.sampleRate;
 
 // サウンド生成
-export const createSound = (freq: number, vol: number) => {
+const createMonophone = (freq: number, vol: number): void => {
 	// OscillatorNode 初期化
 	osc = context.createOscillator();
 	// OscillatorNode リストに追加
@@ -29,6 +29,16 @@ export const createSound = (freq: number, vol: number) => {
 
 	// 再生
 	osc.start(0);
+}
+
+export const createSounds = (freq: number, vol: number, mode: string): void => {
+	if (mode === 'mono') {
+		createMonophone(freq, vol);
+	} else if (mode === 'overtone') {
+		for (let fq = freq; fq < 10000; fq += freq) {
+			createMonophone(fq, vol);
+		}
+	}
 }
 
 // 停止
@@ -55,6 +65,13 @@ export const deleteOsc = (index: number): void => {
 		target.stop(0);
 		oscillators.splice(index, 1);
 	}
+}
+
+export const deleteAllOsc = (): void => {
+	for (let o of oscillators) {
+		o.stop(0);
+	}
+	oscillators = [];
 }
 
 
