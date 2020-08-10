@@ -1,26 +1,25 @@
 #App {
-	width: 1200px;
+	width: 1400px;
 	min-height: 100vh;
 	margin: auto;
 	display: flex;
 	flex-direction: column;
-	justify-content: center;
 	align-items: center;
 }
 
-@media (max-width: 1200px) {
+@media (max-width: 1400px) {
 	#App {
 		width: 90%;
 	}
 }
 
 #canvas-wrapper {
-	width: 1024px;
-	height: 512px;
-	margin: 1rem;
+	width: 1280px;
+	height: 640px;
+	margin: 2rem;
 }
 
-@media (max-width: 1024px) {
+@media (max-width: 1280px) {
 	#canvas-wrapper {
 		width: 90%;
 		height: 90%;
@@ -29,6 +28,12 @@
 
 #text {
 	display: flex;
+	&>button {
+		width: 8rem;
+		height: 8rem;
+		margin: 1rem;
+		padding: .5rem;
+	}
 }
 
 .inputbox {
@@ -55,11 +60,6 @@ button {
 	&:hover {
 		background-color: #f7f7f7;
 	}
-}
-
-#edit>button {
-	width: 8rem;
-	padding: .5rem;
 }
 
 #sound-list>ul {

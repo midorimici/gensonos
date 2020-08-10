@@ -1,7 +1,28 @@
+// AudioContext
 const context: AudioContext = new AudioContext();
+
+// OscillatorNode
 let osc: OscillatorNode = context.createOscillator();
 let oscillators: OscillatorNode[] = [];
+
+// GainNode
 let gain: GainNode = context.createGain();
+
+// BiquadFilterNode
+let filter1: BiquadFilterNode = context.createBiquadFilter();
+let filter2: BiquadFilterNode = context.createBiquadFilter();
+// let filter3: BiquadFilterNode = context.createBiquadFilter();
+// let filter4: BiquadFilterNode = context.createBiquadFilter();
+filter1.type = 'bandpass';
+filter2.type = 'bandpass';
+// filter3.type = 'bandpass';
+// filter4.type = 'bandpass';
+filter1.Q.value = 5;
+filter2.Q.value = 5;
+// filter3.Q.value = 5;
+// filter4.Q.value = 5;
+
+// AnalyserNode
 let analyser: AnalyserNode = context.createAnalyser();
 analyser.smoothingTimeConstant = 0.9;
 
@@ -31,12 +52,68 @@ const createMonophone = (freq: number, vol: number): void => {
 	osc.start(0);
 }
 
+// サウンド生成（フィルタ）
+const createFilteredMonophone = (freq: number, vol: number, mode: string): void => {
+	osc = context.createOscillator();
+	oscillators.push(osc);
+	gain = context.createGain();	
+
+	// フィルタ設定
+	if (mode === 'a') {
+		filter1.frequency.value = 800;
+		filter2.frequency.value = 1200;
+		// filter3.frequency.value = 2800;
+		// filter4.frequency.value = 3500;
+	} else if (mode === 'i') {
+		filter1.frequency.value = 400;
+		filter2.frequency.value = 2500;
+		// filter3.frequency.value = 2900;
+		// fifilter4.frequency.value = 3500;
+	} else if (mode === 'u') {
+		filter1.frequency.value = 300;
+		filter2.frequency.value = 1400;
+		// filter3.frequency.value = 2500;
+		// filter4.frequency.value = 3500;
+	} else if (mode === 'e') {
+		filter1.frequency.value = 500;
+		filter2.frequency.value = 2000;
+		// filter3.frequency.value = 2800;
+		// filter4.frequency.value = 3500;
+	} else if (mode === 'o') {
+		filter1.frequency.value = 500;
+		filter2.frequency.value = 800;
+		// filter3.frequency.value = 2700;
+		// filter4.frequency.value = 3500;
+	}
+
+	// 接続
+	osc.connect(gain);
+	gain.connect(filter1);
+	filter1.connect(filter2);
+	filter2.connect(analyser);
+	//filter2.connect(filter3);
+	//filter3.connect(filter4);
+	//filter4.connect(analyser);
+	analyser.connect(context.destination);
+
+	// 周波数設定
+	osc.frequency.value = freq;
+	// 音量設定
+	gain.gain.value = vol;
+
+	osc.start(0);
+}
+
 export const createSounds = (freq: number, vol: number, mode: string): void => {
 	if (mode === 'mono') {
 		createMonophone(freq, vol);
 	} else if (mode === 'overtone') {
 		for (let fq = freq; fq < 10000; fq += freq) {
 			createMonophone(fq, vol);
+		}
+	} else {
+		for (let fq = freq; fq < 10000; fq += freq) {
+			createFilteredMonophone(fq, vol, mode);
 		}
 	}
 }

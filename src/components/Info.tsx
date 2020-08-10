@@ -38,6 +38,7 @@ export default () => {
 		plotGraph(ctx.current, width.current, height.current, hz);
 	}, []);
 
+	// ミュート
 	const handleToggle = (): void => {
 		setIsMute(!isMute);
 		if (!isMute) {
@@ -50,25 +51,55 @@ export default () => {
 		}
 	}
 
+	// 周波数変更
 	const handleFreqChange = (e: React.ChangeEvent<HTMLInputElement>): void => {
 		let freq: number = Number(e.target.value);
 		setHz(freq);
-		changeFreq(freq);
+		if (mode === 'mono') {
+			changeFreq(freq);
+		} else {
+			if (!isMute) {
+				stopSound();
+				for (const sound of sounds) {
+					createSounds(sound.freq, sound.vol/1000, 'mono');
+				}
+				createSounds(freq, vol/1000, mode);
+			}
+		}
 		// グラフの描画
 		plotGraph(ctx.current!, width.current, height.current, freq);
 	}
 
+	// 音量変更
 	const handleVolChange = (e: React.ChangeEvent<HTMLInputElement>): void => {
 		let vol: number = Number(e.target.value);
 		setVol(vol);
-		changeVol(vol/1000);
+		if (mode === 'mono') {
+			changeVol(vol/1000);
+		} else {
+			if (!isMute) {
+				stopSound();
+				for (const sound of sounds) {
+					createSounds(sound.freq, sound.vol/1000, 'mono');
+				}
+				createSounds(hz, vol/1000, mode);
+			}
+		}
 	}
 
+	// 追加対象変更
 	const handleSelect = (): void => {
 		let sel: HTMLSelectElement = document.getElementById('mode-select') as HTMLSelectElement;
-		setMode((sel.children[sel.selectedIndex] as HTMLOptionElement).value);
+		let newMode: string = (sel.children[sel.selectedIndex] as HTMLOptionElement).value;
+		setMode(newMode);
+		if (newMode === 'mono' || newMode === 'overtone') {
+			(document.getElementById('add-btn') as HTMLButtonElement)!.disabled = false;
+		} else {
+			(document.getElementById('add-btn') as HTMLButtonElement)!.disabled = true;
+		}
 	}
 
+	// リストに追加
 	const handleAdd = (): void => {
 		if (~sounds.map(e => e.freq).indexOf(hz)) return;
 		if (mode === 'mono') {
@@ -85,6 +116,7 @@ export default () => {
 		}
 	}
 
+	// リストから削除
 	const handleDelete = (index: number): void => {
 		let newSounds: {freq: number, vol: number}[] = sounds.slice();
 		newSounds.splice(index, 1);
@@ -92,6 +124,7 @@ export default () => {
 		deleteOsc(index);
 	}
 
+	// リスト全削除
 	const handleDeleteAll = () => {
 		setSounds([]);
 		deleteAllOsc();
@@ -99,10 +132,10 @@ export default () => {
 
 	return (
 		<section id='text'>
+			<button id='mute-btn' onClick={handleToggle}>
+				{isMute ? 'unmute' : 'mute'}
+			</button>
 			<div id='edit'>
-				<button id='mute-btn' onClick={handleToggle}>
-					{isMute ? 'unmute' : 'mute'}
-				</button>
 				<div className='inputbox'>
 					周波数
 					<input type='number' value={hz} min={0} onChange={handleFreqChange} />
@@ -123,12 +156,27 @@ export default () => {
 						<option value='u'>U</option>
 						<option value='e'>E</option>
 						<option value='o'>O</option>
+						<option value='custom'>フォルマント指定</option>
 					</select>
 				</div>
-				<button id='add-btn' onClick={handleAdd}>
-					Add >>
-				</button>
+				{mode === 'custom' &&
+					<>
+						<div className='inputbox'>
+							F1
+							<input type='number' min={0} />
+							Hz
+						</div>
+						<div className='inputbox'>
+							F2
+							<input type='number' min={0} />
+							Hz
+						</div>
+					</>
+				}
 			</div>
+			<button id='add-btn' onClick={handleAdd}>
+				Add >>
+			</button>
 			<div id='sound-list'>
 				{sounds.length ? <button id='delall-btn' onClick={handleDeleteAll}>全削除</button> : ''}
 				<ul>
