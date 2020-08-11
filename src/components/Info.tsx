@@ -14,28 +14,27 @@ export default () => {
 	const [hz, setHz] = useState<number>(440);
 	const [vol, setVol] = useState<number>(500);
 	const [mode, setMode] = useState<string>('mono');
+	const [f1, setF1] = useState<number>(1000);
+	const [f2, setF2] = useState<number>(1500);
 	const [isMute, setIsMute] = useState<boolean>(true);
 
 	const [sounds, setSounds] = useState<{freq: number, vol: number}[]>([]);
 
 	let width = useRef<number>(256);
 	let height = useRef<number>(256);
-	let ctx = useRef<CanvasRenderingContext2D | null>(null);
+	let canvas = useRef<HTMLCanvasElement | null>(null);
 
 	useEffect(() => {
-		const canvas: HTMLCanvasElement = document.getElementById('graph') as HTMLCanvasElement;
+		canvas.current = document.getElementById('graph') as HTMLCanvasElement;
 		const wrapper: HTMLElement = document.getElementById('canvas-wrapper')!;
 
 		width.current = wrapper.clientWidth;
 		height.current = wrapper.clientHeight;
 
-		canvas.width = width.current;
-		canvas.height = height.current;
-
-		ctx.current = canvas.getContext('2d')!;		
-		//
+		canvas.current.width = width.current;
+		canvas.current.height = height.current;
 		// グラフの描画
-		plotGraph(ctx.current, width.current, height.current, hz);
+		plotGraph(canvas.current, width.current, height.current, hz);
 	}, []);
 
 	// ミュート
@@ -47,7 +46,7 @@ export default () => {
 			for (const sound of sounds) {
 				createSounds(sound.freq, sound.vol/1000, 'mono');
 			}
-			createSounds(hz, vol/1000, mode);
+			createSounds(hz, vol/1000, mode, f1, f2);
 		}
 	}
 
@@ -63,11 +62,11 @@ export default () => {
 				for (const sound of sounds) {
 					createSounds(sound.freq, sound.vol/1000, 'mono');
 				}
-				createSounds(freq, vol/1000, mode);
+				createSounds(freq, vol/1000, mode, f1, f2);
 			}
 		}
 		// グラフの描画
-		plotGraph(ctx.current!, width.current, height.current, freq);
+		plotGraph(canvas.current!, width.current, height.current, freq);
 	}
 
 	// 音量変更
@@ -82,7 +81,7 @@ export default () => {
 				for (const sound of sounds) {
 					createSounds(sound.freq, sound.vol/1000, 'mono');
 				}
-				createSounds(hz, vol/1000, mode);
+				createSounds(hz, vol/1000, mode, f1, f2);
 			}
 		}
 	}
@@ -95,7 +94,57 @@ export default () => {
 		if (newMode === 'mono' || newMode === 'overtone') {
 			(document.getElementById('add-btn') as HTMLButtonElement)!.disabled = false;
 		} else {
+			if (newMode === 'a') {
+				setF1(800);
+				setF2(1200);
+				// setF3(2800);
+				// setF4(3500);
+			} else if (newMode === 'i') {
+				setF1(400);
+				setF2(2500);
+				// setF3(2900);
+				// fisetF4(3500);
+			} else if (newMode === 'u') {
+				setF1(300);
+				setF2(1400);
+				// setF3(2500);
+				// setF4(3500);
+			} else if (newMode === 'e') {
+				setF1(500);
+				setF2(2000);
+				// setF3(2800);
+				// setF4(3500);
+			} else if (newMode === 'o') {
+				setF1(500);
+				setF2(800);
+				// setF3(2700);
+				// setF4(3500);
+			}
 			(document.getElementById('add-btn') as HTMLButtonElement)!.disabled = true;
+		}
+	}
+
+	// F1 F2 変更
+	const handleFormantChange = (e: React.ChangeEvent<HTMLInputElement>, formant: 1 | 2): void => {
+		let val: number = Number(e.target.value);
+		if (formant === 1) {
+			setF1(val);
+			if (!isMute) {
+				stopSound();
+				for (const sound of sounds) {
+					createSounds(sound.freq, sound.vol/1000, 'mono');
+				}
+				createSounds(hz, vol/1000, mode, val, f2);
+			}
+		} else {
+			setF2(val);
+			if (!isMute) {
+				stopSound();
+				for (const sound of sounds) {
+					createSounds(sound.freq, sound.vol/1000, 'mono');
+				}
+				createSounds(hz, vol/1000, mode, f1, val);
+			}
 		}
 	}
 
@@ -163,12 +212,14 @@ export default () => {
 					<>
 						<div className='inputbox'>
 							F1
-							<input type='number' min={0} />
+							<input type='number' value={f1} min={0} max={f2} onChange={
+									(e: React.ChangeEvent<HTMLInputElement>) => handleFormantChange(e, 1)}/>
 							Hz
 						</div>
 						<div className='inputbox'>
 							F2
-							<input type='number' min={0} />
+							<input type='number' value={f2} min={f1} onChange={
+									(e: React.ChangeEvent<HTMLInputElement>) => handleFormantChange(e, 2)}/>
 							Hz
 						</div>
 					</>
@@ -178,12 +229,18 @@ export default () => {
 				Add >>
 			</button>
 			<div id='sound-list'>
-				{sounds.length ? <button id='delall-btn' onClick={handleDeleteAll}>全削除</button> : ''}
+				{sounds.length ?
+					<>
+						<button id='delall-btn' onClick={handleDeleteAll}>全削除</button>
+						<button id='muteall-btn'>リストを全てミュート</button>
+					</>
+					: ''}
 				<ul>
 					{sounds.map((e: {freq: number, vol: number}, i: number) => (
 						<li key={i}>
 							周波数:{e.freq}, 音量:{e.vol}
 							<button className='del-btn' onClick={() => handleDelete(i)}>削除</button>
+							<button className='mute-btn'>ミュート</button>
 						</li>
 					))}
 				</ul>

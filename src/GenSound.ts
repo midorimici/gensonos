@@ -53,38 +53,16 @@ const createMonophone = (freq: number, vol: number): void => {
 }
 
 // サウンド生成（フィルタ）
-const createFilteredMonophone = (freq: number, vol: number, mode: string): void => {
+const createFilteredMonophone = (
+	freq: number, vol: number, f1: number, f2: number
+): void => {
 	osc = context.createOscillator();
 	oscillators.push(osc);
-	gain = context.createGain();	
+	gain = context.createGain();
 
 	// フィルタ設定
-	if (mode === 'a') {
-		filter1.frequency.value = 800;
-		filter2.frequency.value = 1200;
-		// filter3.frequency.value = 2800;
-		// filter4.frequency.value = 3500;
-	} else if (mode === 'i') {
-		filter1.frequency.value = 400;
-		filter2.frequency.value = 2500;
-		// filter3.frequency.value = 2900;
-		// fifilter4.frequency.value = 3500;
-	} else if (mode === 'u') {
-		filter1.frequency.value = 300;
-		filter2.frequency.value = 1400;
-		// filter3.frequency.value = 2500;
-		// filter4.frequency.value = 3500;
-	} else if (mode === 'e') {
-		filter1.frequency.value = 500;
-		filter2.frequency.value = 2000;
-		// filter3.frequency.value = 2800;
-		// filter4.frequency.value = 3500;
-	} else if (mode === 'o') {
-		filter1.frequency.value = 500;
-		filter2.frequency.value = 800;
-		// filter3.frequency.value = 2700;
-		// filter4.frequency.value = 3500;
-	}
+	filter1.frequency.value = f1;
+	filter2.frequency.value = f2;
 
 	// 接続
 	osc.connect(gain);
@@ -104,7 +82,7 @@ const createFilteredMonophone = (freq: number, vol: number, mode: string): void 
 	osc.start(0);
 }
 
-export const createSounds = (freq: number, vol: number, mode: string): void => {
+export const createSounds = (freq: number, vol: number, mode: string, f1?: number, f2?: number): void => {
 	if (mode === 'mono') {
 		createMonophone(freq, vol);
 	} else if (mode === 'overtone') {
@@ -113,7 +91,7 @@ export const createSounds = (freq: number, vol: number, mode: string): void => {
 		}
 	} else {
 		for (let fq = freq; fq < 10000; fq += freq) {
-			createFilteredMonophone(fq, vol, mode);
+			createFilteredMonophone(fq, vol, f1!, f2!);
 		}
 	}
 }
@@ -166,9 +144,13 @@ const range: number = analyser.maxDecibels - analyser.minDecibels;
 
 // timeout
 let timer: any = 0;
+let mouseX: number = 0;
+let mouseY: number = 0;
 
-export const plotGraph = (ctx: CanvasRenderingContext2D, width: number, height: number, freq: number): void => {
+export const plotGraph = (canvas: HTMLCanvasElement, width: number, height: number, freq: number): void => {
 	clearInterval(timer);
+
+	let ctx: CanvasRenderingContext2D = canvas.getContext('2d')!;
 	
 	const drawGraph = (): void => {
 		// 背景
@@ -197,9 +179,14 @@ export const plotGraph = (ctx: CanvasRenderingContext2D, width: number, height: 
 			ctx.fillRect(0, y, width, 1);
 			ctx.fillText(i + 'dB', 4, y - 4);
 		}
+		// カーソル位置の座標を表示
+		ctx.fillStyle = '#aa0000';
+		ctx.fillRect(mouseX, 0, 1, height);
+		ctx.fillRect(0, mouseY, width, 1);
+		ctx.fillText(Math.round(10**(mouseX*Math.log10(24000)/width)) + 'Hz', mouseX + 4, height - 4);
 
 		// 現在変更中の音の周波数の線
-		ctx.fillStyle = '#aa0000';
+		ctx.fillStyle = '#00aa00';
 		ctx.fillRect(width*Math.log10(freq)/Math.log10(24000), 16, 1, height - 16);
 
 		// 周波数グラフ描画
@@ -225,4 +212,10 @@ export const plotGraph = (ctx: CanvasRenderingContext2D, width: number, height: 
 	}
 
 	timer = setInterval(drawGraph, 80);
+
+	canvas.addEventListener('click', (e: MouseEvent) => {
+		let rect: DOMRect = (e.target as Element).getBoundingClientRect();
+		mouseX = e.clientX - rect.left;
+		mouseY = e.clientY - rect.top;
+	});
 }
