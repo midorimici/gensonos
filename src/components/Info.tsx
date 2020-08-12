@@ -1,4 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { faTrash, faVolumeUp, faVolumeMute } from '@fortawesome/free-solid-svg-icons';
 
 import {
 	createSounds,
@@ -6,8 +8,6 @@ import {
 	stopSound,
 	changeFreq,
 	changeVol,
-	deleteOsc,
-	deleteAllOsc,
 } from '../GenSound';
 
 export default () => {
@@ -18,7 +18,7 @@ export default () => {
 	const [f2, setF2] = useState<number>(1500);
 	const [isMute, setIsMute] = useState<boolean>(true);
 
-	const [sounds, setSounds] = useState<{freq: number, vol: number}[]>([]);
+	const [sounds, setSounds] = useState<{freq: number, vol: number, on: boolean}[]>([]);
 
 	let width = useRef<number>(256);
 	let height = useRef<number>(256);
@@ -37,16 +37,24 @@ export default () => {
 		plotGraph(canvas.current, width.current, height.current, hz);
 	}, []);
 
+	const playSounds = (freq: number, vol: number, f1: number, f2: number,
+		sounds_: {freq: number, vol: number, on: boolean}[]=sounds
+	): void => {
+		for (const sound of sounds_) {
+			if (sound.on) {
+				createSounds(sound.freq, sound.vol/1000, 'mono');
+			}
+		}
+		createSounds(freq, vol/1000, mode, f1, f2);
+	}
+
 	// ミュート
 	const handleToggle = (): void => {
 		setIsMute(!isMute);
 		if (!isMute) {
 			stopSound();
 		} else {
-			for (const sound of sounds) {
-				createSounds(sound.freq, sound.vol/1000, 'mono');
-			}
-			createSounds(hz, vol/1000, mode, f1, f2);
+			playSounds(hz, vol, f1, f2);
 		}
 	}
 
@@ -59,10 +67,7 @@ export default () => {
 		} else {
 			if (!isMute) {
 				stopSound();
-				for (const sound of sounds) {
-					createSounds(sound.freq, sound.vol/1000, 'mono');
-				}
-				createSounds(freq, vol/1000, mode, f1, f2);
+				playSounds(freq, vol, f1, f2);
 			}
 		}
 		// グラフの描画
@@ -78,10 +83,7 @@ export default () => {
 		} else {
 			if (!isMute) {
 				stopSound();
-				for (const sound of sounds) {
-					createSounds(sound.freq, sound.vol/1000, 'mono');
-				}
-				createSounds(hz, vol/1000, mode, f1, f2);
+				playSounds(hz, vol, f1, f2);
 			}
 		}
 	}
@@ -131,19 +133,13 @@ export default () => {
 			setF1(val);
 			if (!isMute) {
 				stopSound();
-				for (const sound of sounds) {
-					createSounds(sound.freq, sound.vol/1000, 'mono');
-				}
-				createSounds(hz, vol/1000, mode, val, f2);
+				playSounds(hz, vol, val, f2);
 			}
 		} else {
 			setF2(val);
 			if (!isMute) {
 				stopSound();
-				for (const sound of sounds) {
-					createSounds(sound.freq, sound.vol/1000, 'mono');
-				}
-				createSounds(hz, vol/1000, mode, f1, val);
+				playSounds(hz, vol, f1, val);
 			}
 		}
 	}
@@ -152,11 +148,11 @@ export default () => {
 	const handleAdd = (): void => {
 		if (~sounds.map(e => e.freq).indexOf(hz)) return;
 		if (mode === 'mono') {
-			setSounds([...sounds, {freq: hz, vol}]);
+			setSounds([...sounds, {freq: hz, vol, on: true}]);
 		} else if (mode === 'overtone') {
-			let appendSounds: {freq: number, vol: number}[] = [];
+			let appendSounds: {freq: number, vol: number, on: boolean}[] = [];
 			for (let fq = hz; fq < 10000; fq += hz) {
-				appendSounds.push({freq: fq, vol});
+				appendSounds.push({freq: fq, vol, on: true});
 			}
 			setSounds([...sounds, ...appendSounds]);
 		}
@@ -167,20 +163,85 @@ export default () => {
 
 	// リストから削除
 	const handleDelete = (index: number): void => {
-		let newSounds: {freq: number, vol: number}[] = sounds.slice();
+		let newSounds: {freq: number, vol: number, on: boolean}[] = sounds.slice();
 		newSounds.splice(index, 1);
 		setSounds(newSounds);
-		deleteOsc(index);
+		if (!isMute) {
+			stopSound();
+			playSounds(hz, vol, f1, f2, newSounds);
+		}
 	}
 
 	// リスト全削除
-	const handleDeleteAll = () => {
+	const handleDeleteAll = (): void => {
 		setSounds([]);
-		deleteAllOsc();
+		if (!isMute) {
+			stopSound();
+			createSounds(hz, vol/1000, mode, f1, f2);
+		}
+	}
+
+	// ミュート
+	const handleMute = (index: number) => {
+		let newSounds: {freq: number, vol: number, on: boolean}[] = sounds.slice();
+		newSounds[index].on = false;
+		setSounds(newSounds);
+		if (!isMute) {
+			stopSound();
+			playSounds(hz, vol, f1, f2, newSounds);
+		}
+	}
+
+	// ミュート解除
+	const handleUnmute = (index: number) => {
+		let newSounds: {freq: number, vol: number, on: boolean}[] = sounds.slice();
+		newSounds[index].on = true;
+		setSounds(newSounds);
+		if (!isMute) {
+			stopSound();
+			playSounds(hz, vol, f1, f2, newSounds);
+		}
+	}
+
+	// リスト全ミュート
+	const muteAll = (): void => {
+		let newSounds: {freq: number, vol: number, on: boolean}[] = sounds.slice();
+		for (let sound of newSounds) {
+			sound.on = false;
+		}
+		setSounds(newSounds);
+		if (!isMute) {
+			stopSound();
+			playSounds(hz, vol, f1, f2, newSounds);
+		}
+	}
+
+	// リスト全ミュート解除
+	const unmuteAll = (): void => {
+		let newSounds: {freq: number, vol: number, on: boolean}[] = sounds.slice();
+		for (let sound of newSounds) {
+			sound.on = true;
+			if (!isMute) {
+				createSounds(sound.freq, sound.vol/1000, 'mono');
+			}
+		}
+		setSounds(newSounds);
+	}
+
+	// キー操作
+	const handleKey = (e: React.KeyboardEvent): void => {
+		switch (e.key) {
+			case 'm':
+				handleToggle();
+				break;
+			case 'a':
+				handleAdd();
+				break;
+		}
 	}
 
 	return (
-		<section id='text'>
+		<section id='text' onKeyPress={(e: React.KeyboardEvent) => handleKey(e)} tabIndex={0}>
 			<button id='mute-btn' onClick={handleToggle}>
 				{isMute ? 'unmute' : 'mute'}
 			</button>
@@ -232,15 +293,23 @@ export default () => {
 				{sounds.length ?
 					<>
 						<button id='delall-btn' onClick={handleDeleteAll}>全削除</button>
-						<button id='muteall-btn'>リストを全てミュート</button>
+						{sounds.some(
+							(e: {freq: number, vol: number, on: boolean}) => e.on) ?
+								<button id='muteall-btn' onClick={muteAll}>リストを全てミュート</button> :
+								<button id='muteall-btn' onClick={unmuteAll}>リストを全てミュート解除</button>
+							}
 					</>
 					: ''}
 				<ul>
-					{sounds.map((e: {freq: number, vol: number}, i: number) => (
+					{sounds.map((e: {freq: number, vol: number, on: boolean}, i: number) => (
 						<li key={i}>
 							周波数:{e.freq}, 音量:{e.vol}
-							<button className='del-btn' onClick={() => handleDelete(i)}>削除</button>
-							<button className='mute-btn'>ミュート</button>
+							<FontAwesomeIcon icon={faTrash} className='del-btn' onClick={() => handleDelete(i)} />
+							<FontAwesomeIcon
+								icon={e.on ? faVolumeMute : faVolumeUp}
+								className='mute-btn'
+								onClick={() => e.on ? handleMute(i) : handleUnmute(i)}
+							/>
 						</li>
 					))}
 				</ul>

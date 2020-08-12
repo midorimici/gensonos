@@ -19,15 +19,9 @@
 	margin: 2rem;
 }
 
-@media (max-width: 1280px) {
-	#canvas-wrapper {
-		width: 90%;
-		height: 90%;
-	}
-}
-
 #text {
 	display: flex;
+	flex-wrap: wrap;
 	&>button {
 		width: 8rem;
 		height: 8rem;
@@ -64,10 +58,41 @@ button {
 
 #sound-list>ul {
 	width: 30rem;
-	&>button {
-		width: 4rem;
-		padding: .2rem;
+	.del-btn, .mute-btn {
+		margin: auto .5rem;
+		cursor: pointer;
+		transition: .4s;
+		&:hover {
+			color: #ff7777;
+		}
+	}
+	&>li {
+		margin-bottom: 1rem;
 	}
 }
 
-
+@media (max-width: 1280px) {
+	#canvas-wrapper {
+		width: 90%;
+		height: 90vh;
+	}
+	button {
+		font-size: 1rem;
+	}
+	#text {
+		font-size: 1rem;
+		&>button {
+			min-width: 4rem;
+			height: 4rem;
+		}
+	}
+	#muteall-btn {
+		max-width: 10rem;
+	}
+	#sound-list>ul {
+		width: auto;
+		.del-btn, .mute-btn {
+			margin: auto 16px;
+		}
+	}
+}

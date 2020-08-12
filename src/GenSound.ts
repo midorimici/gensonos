@@ -7,6 +7,7 @@ let oscillators: OscillatorNode[] = [];
 
 // GainNode
 let gain: GainNode = context.createGain();
+let gains: GainNode[] = [];
 
 // BiquadFilterNode
 let filter1: BiquadFilterNode = context.createBiquadFilter();
@@ -37,6 +38,8 @@ const createMonophone = (freq: number, vol: number): void => {
 	oscillators.push(osc);
 	// GainNode 初期化
 	gain = context.createGain();	
+	// GainNode リストに追加
+	gains.push(gain);
 
 	// 接続
 	osc.connect(gain);
@@ -59,6 +62,7 @@ const createFilteredMonophone = (
 	osc = context.createOscillator();
 	oscillators.push(osc);
 	gain = context.createGain();
+	gains.push(gain);
 
 	// フィルタ設定
 	filter1.frequency.value = f1;
@@ -113,21 +117,6 @@ export const changeVol = (vol: number): void => {
 	gain.gain.value = vol;
 }
 
-// oscillator 消去
-export const deleteOsc = (index: number): void => {
-	let target: OscillatorNode = oscillators[index];
-	if (target) {
-		target.stop(0);
-		oscillators.splice(index, 1);
-	}
-}
-
-export const deleteAllOsc = (): void => {
-	for (let o of oscillators) {
-		o.stop(0);
-	}
-	oscillators = [];
-}
 
 
 

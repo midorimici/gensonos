@@ -24,3 +24,7 @@ yarn-error.log*
 
 *~
 *.swp
+
+src/react-app-env.d.ts
+src/serviceWorker.ts
+src/setupTests.ts
