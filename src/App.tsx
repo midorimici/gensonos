@@ -1,6 +1,6 @@
 import React from 'react';
 
-import Info from './components/Info'
+import Info from './components/Info';
 import Description from './components/Description';
 
 import './App.scss';
@@ -18,6 +18,7 @@ export default () => {
 				</section>
 				<Info />
 				<Description />
+				<a href='https://github.com/midorimici/gensonos'>GitHub</a>
 				Ⓒ 2020 みどりみち
 			</div>
 		</>
