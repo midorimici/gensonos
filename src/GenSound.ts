@@ -173,6 +173,7 @@ export const plotGraph = (canvas: HTMLCanvasElement, width: number, height: numb
 		ctx.fillRect(mouseX, 0, 1, height);
 		ctx.fillRect(0, mouseY, width, 1);
 		ctx.fillText(Math.round(10**(mouseX*Math.log10(24000)/width)) + 'Hz', mouseX + 4, height - 4);
+		ctx.fillText(Math.round(10*(analyser.maxDecibels - (mouseY - 16)*range/height))/10 + 'dB', 36, mouseY - 4);
 
 		// 現在変更中の音の周波数の線
 		ctx.fillStyle = '#00aa00';
