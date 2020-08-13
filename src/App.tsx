@@ -1,6 +1,7 @@
 import React from 'react';
 
 import Info from './components/Info'
+import Description from './components/Description';
 
 import './App.scss';
 import logo from './logo.svg';
@@ -16,6 +17,8 @@ export default () => {
 					</canvas>
 				</section>
 				<Info />
+				<Description />
+				Ⓒ 2020 みどりみち
 			</div>
 		</>
   );

@@ -128,7 +128,8 @@ const changeScale = (value: number, len: number): number => {
 };
 
 // 範囲
-analyser.maxDecibels = 0;
+analyser.maxDecibels = -10;
+analyser.minDecibels = -80;
 const range: number = analyser.maxDecibels - analyser.minDecibels;
 
 // timeout
@@ -163,7 +164,7 @@ export const plotGraph = (canvas: HTMLCanvasElement, width: number, height: numb
 			}
 		}
 		// 縦軸グリッド
-		for (let i = analyser.minDecibels; i <= analyser.maxDecibels; i += 20) {
+		for (let i = analyser.minDecibels; i <= analyser.maxDecibels; i += 10) {
 			let y: number = 16 + height*(analyser.maxDecibels - i)/range;
 			ctx.fillRect(0, y, width, 1);
 			ctx.fillText(i + 'dB', 4, y - 4);
@@ -173,7 +174,9 @@ export const plotGraph = (canvas: HTMLCanvasElement, width: number, height: numb
 		ctx.fillRect(mouseX, 0, 1, height);
 		ctx.fillRect(0, mouseY, width, 1);
 		ctx.fillText(Math.round(10**(mouseX*Math.log10(24000)/width)) + 'Hz', mouseX + 4, height - 4);
-		ctx.fillText(Math.round(10*(analyser.maxDecibels - (mouseY - 16)*range/height))/10 + 'dB', 36, mouseY - 4);
+		ctx.fillText(Math.round(
+			10*(analyser.maxDecibels - (mouseY - 16)*range/height))/10 + 'dB',
+			36, mouseY - 4);
 
 		// 現在変更中の音の周波数の線
 		ctx.fillStyle = '#00aa00';

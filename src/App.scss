@@ -1,6 +1,6 @@
 #App {
 	width: 1400px;
-	min-height: calc(100vh - 67px);
+	min-height: 100vh;
 	margin: auto;
 	display: flex;
 	flex-direction: column;
@@ -61,7 +61,7 @@ button {
 	}
 }
 
-#sound-list>ul {
+#sound-list>ol {
 	width: 30rem;
 	.del-btn, .mute-btn {
 		margin: auto .5rem;
@@ -74,6 +74,10 @@ button {
 	&>li {
 		margin-bottom: 1rem;
 	}
+}
+
+#description {
+	margin: 1rem auto;
 }
 
 @media (max-width: 1280px) {
@@ -94,7 +98,7 @@ button {
 	#muteall-btn {
 		max-width: 10rem;
 	}
-	#sound-list>ul {
+	#sound-list>ol {
 		width: auto;
 		.del-btn, .mute-btn {
 			margin: auto 16px;
