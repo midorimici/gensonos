@@ -1,6 +1,6 @@
 #App {
 	width: 1400px;
-	min-height: 100vh;
+	min-height: calc(100vh - 67px);
 	margin: auto;
 	display: flex;
 	flex-direction: column;
@@ -11,6 +11,11 @@
 	#App {
 		width: 90%;
 	}
+}
+
+#logo {
+	margin-top: 1rem;
+	margin-left: 1rem;
 }
 
 #canvas-wrapper {
