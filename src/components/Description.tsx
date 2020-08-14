@@ -29,7 +29,7 @@ export default () => {
 				<summary>ショートカットキー</summary>
 				<dl>
 					<p>ショートカットキーは、ボタンやリストがある領域を選択した状態で動作します。</p>
-					<dt><b>m</b></dt>
+					<dt><b>t</b></dt>
 					<dd>全体のミュート/ミュート解除</dd>
 					<dt><b>f</b></dt>
 					<dd>周波数変更</dd>
